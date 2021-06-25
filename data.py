@@ -10,7 +10,11 @@ from tqdm import tqdm
 
 from transformers import BertTokenizer
 
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
+
+import sys 
+
+import torch
 
 import logging
 logging.basicConfig()
@@ -77,7 +81,7 @@ class PersonaChatDataset_v3():
 			for hst in item['history'][::-1]:
 				history = speakers[speaker] + hst + history
 				speaker = 1 - speaker
-			response = '<speaker2> ' + item['response'] + ' <eos>'
+			response = '<bos> ' + item['response'] + ' <eos>'
 			bertified_data.append({
 			  'persona':persona.replace('  ', ' '),
 			  'history':history.replace('  ', ' '),
@@ -94,6 +98,11 @@ class PersonaChatDataset_v3():
 		for item in pbar:
 			inputs = self.tokenizer(item['input'], add_special_tokens=True, max_length=encoder_max_length, truncation=True, padding="max_length")
 			outputs = self.tokenizer(item['response'], add_special_tokens=True, max_length=decoder_max_length, truncation=True, padding="max_length")
+			assert len(inputs.input_ids)==512
+			assert len(inputs.attention_mask)==512
+			assert len(outputs.input_ids)==128
+			assert len(outputs.attention_mask)==128
+			
 			_item = {}
 			_item["input_ids"] = inputs.input_ids
 			_item["attention_mask"] = inputs.attention_mask
@@ -126,7 +135,8 @@ class PersonaChatPytorchDataset_v3(Dataset):
 
 	def __getitem__(self, index):
 		# returns specific item
-		return self.samples[index]
+		sample = self.samples[index]
+		return {key:torch.tensor(value) for key, value in sample.items()}
 
 	def __len__(self):
 		return self.n_samples
@@ -136,3 +146,5 @@ if __name__=='__main__':
 	tokenizer = BertTokenizer.from_pretrained("prajjwal1/bert-tiny")
 	tokenizer.add_special_tokens(ATTR_TO_SPECIAL_TOKEN)
 	train = PersonaChatDataset_v3('./data/personachat_self_original.json', tokenizer, test=False)
+	train = PersonaChatDataset_v3('./data/personachat_self_original.json', tokenizer, test=True)
+	
