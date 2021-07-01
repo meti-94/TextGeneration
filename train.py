@@ -110,27 +110,11 @@ for epoch in range(epochs):
 						model=model,
 						tokenizer=tokenizer,
 					   )
+
+			logging.info(model.automatic_metrics(validset)
+
 		if step%1000==0:
 			save(model)
 	logging.info(f'Epoch number: {epoch+1} Train Loss is equal: {sum(losses)/len(losses)}') 
-	# model.eval()
-	# losses = []
-	# for _, batch in enumerate(tqdm(valid_dataloader, desc=f"Eval Epoch Number {epoch+1}")):
-	# 	with torch.no_grad():
-	# 		device_batch = {key:value.to(device) for key, value in batch.items()}
-	# 		loss = model(**device_batch)['loss']
-	# 		losses.append(loss)
-	# logging.info(f'Epoch number: {epoch+1} Eval Loss is equal: {sum(losses)/len(losses)}')
-
-	# for _, batch in enumerate(test_dataloader):
-	# 	texts = []
-	# 	device_batch = {key:value.to(device) for key, value in batch.items()}
-	# 	greedy_generate(
-	# 					input_ids=device_batch['input_ids'],
-	# 					decoder_input_ids=device_batch['decoder_input_ids'],
-	# 					device=device,
-	# 					model=model,
-	# 					tokenizer=tokenizer,
-	# 				   )
-
+	
 	
